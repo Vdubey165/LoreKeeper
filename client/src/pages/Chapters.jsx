@@ -141,7 +141,7 @@ export default function Chapters() {
   )
 
   const EditorView = (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-hidden">
       {activeChapter ? (
         <>
           <div
