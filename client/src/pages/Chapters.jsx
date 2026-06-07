@@ -86,7 +86,7 @@ export default function Chapters() {
   const ChapterList = (
     <div
       className="flex flex-col overflow-hidden h-full"
-      style={{ background: 'var(--bg-primary)', borderRight: '0.5px solid var(--border)',marginRight: '-0.5px' }}
+      style={{ background: 'var(--bg-secondary)', borderRight: '0.5px solid var(--border)' }}
     >
       <div className="flex items-center justify-between px-3 py-3" style={{ borderBottom: '0.5px solid var(--border)' }}>
         <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
