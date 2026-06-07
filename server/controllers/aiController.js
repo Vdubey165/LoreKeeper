@@ -3,7 +3,6 @@ import Character from '../models/Character.js';
 import WorldEntry from '../models/WorldEntry.js';
 import Chapter from '../models/Chapter.js';
 
-// Groq uses OpenAI-compatible API — no extra SDK needed
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.1-8b-instant';
 
@@ -45,7 +44,7 @@ const buildStoryContext = async (storyId) => {
     });
   }
 
-  return context;
+  return { context, storyTitle: story.title };
 };
 
 export const chat = async (req, res, next) => {
@@ -55,29 +54,36 @@ export const chat = async (req, res, next) => {
     const story = await Story.findOne({ _id: storyId, userId: req.user._id });
     if (!story) return res.status(404).json({ message: 'Story not found' });
 
-    const storyContext = await buildStoryContext(storyId);
+    const { context, storyTitle } = await buildStoryContext(storyId);
 
-    const systemPrompt = `You are a creative writing assistant for a story called "${story.title}".
-You have deep knowledge of this story's characters, world, and plot.
-Help the writer stay consistent with established lore, suggest ideas fitting their world, and assist with writing challenges.
+    const systemPrompt = `You are a creative writing assistant embedded inside Lorekeeper, a story writing platform.
+You have deep knowledge of the story called "${storyTitle}" — its characters, world, and plot.
+Your ONLY purpose is to help the writer with this specific story. You do not answer general knowledge questions, coding questions, math, or anything unrelated to creative writing or this story.
 
-${storyContext}
+If the user asks something unrelated to writing or this story, respond with:
+"I'm your lore assistant — I can only help with your story, characters, world-building, and writing. Try asking me something about ${storyTitle}."
+
+${context}
 
 Guidelines:
-- Stay consistent with established lore and character traits
+- Only answer questions about this story, its characters, world, plot, or creative writing in general
+- Stay consistent with established lore and character traits above
 - Flag contradictions when you spot them
 - Reference actual character names and locations from the story
-- Be concise but creative`;
+- Be concise but creative
+- Never answer questions about real-world topics, other stories, code, math, or anything outside this story's context`;
+
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({
+        message: 'GROQ_API_KEY not configured. Add it to your .env file. Get a free key at console.groq.com',
+      });
+    }
 
     const groqMessages = [
       { role: 'system', content: systemPrompt },
       ...messages.map((m) => ({ role: m.role, content: m.content })),
     ];
-
-    const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ message: 'GROQ_API_KEY not configured. Add it to your .env file. Get a free key at console.groq.com' });
-    }
 
     const response = await fetch(GROQ_URL, {
       method: 'POST',
@@ -95,6 +101,15 @@ Guidelines:
 
     if (!response.ok) {
       const err = await response.json();
+
+      // Rate limit — show clean message instead of raw API error
+      if (response.status === 429) {
+        return res.status(429).json({
+          message: "Daily AI limit reached. Groq's free tier resets every 24 hours. Try again tomorrow.",
+          rateLimited: true,
+        });
+      }
+
       return res.status(500).json({ message: err.error?.message || 'Groq API error' });
     }
 
