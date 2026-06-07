@@ -190,8 +190,8 @@ export default function WorldBible() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="hidden md:flex h-full w-56 flex-shrink-0">{ListView}</div>
-      <div className="hidden md:flex flex-1 overflow-hidden">{DetailView}</div>
+      <div className="hidden md:flex w-56 flex-shrink-0 h-full overflow-hidden">{ListView}</div>
+      <div className="hidden md:flex flex-1 min-w-0 overflow-hidden">{DetailView}</div>
       <div className="flex md:hidden flex-1 overflow-hidden">
         {mobileView === 'list' ? ListView : DetailView}
       </div>

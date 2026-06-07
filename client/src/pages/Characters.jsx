@@ -215,8 +215,10 @@ export default function Characters() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* Desktop: side by side */}
-      <div className="hidden md:contents">
+      <div className="hidden md:flex w-56 flex-shrink-0 h-full overflow-hidden">
         {ListView}
+      </div>
+      <div className="hidden md:flex flex-1 min-w-0 overflow-hidden">
         {DetailView}
       </div>
 
