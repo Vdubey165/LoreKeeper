@@ -204,10 +204,8 @@ export default function Chapters() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* Desktop: both panels side by side */}
-      <div className="hidden md:flex h-full w-52 flex-shrink-0" style={{ borderRight: '0.5px solid var(--border)' }}>
+      <div className="hidden md:contents">
         {ChapterList}
-      </div>
-      <div className="hidden md:flex flex-1 overflow-hidden">
         {EditorView}
       </div>
 
