@@ -193,9 +193,8 @@ export default function Chapters() {
       ) : (
         <EmptyState
           icon={BookOpen}
-          title={chapters.length === 0 ? 'No chapters yet' : 'Select a chapter'}
-          message={chapters.length === 0 ? 'Each chapter is a separate writing space. Auto-saves as you type. Add in any order — rearrange later.' : 'Pick a chapter from the list on the left to open it in the editor.'}
-          action={chapters.length === 0 ? 'Write first chapter' : null}
+          message={chapters.length === 0 ? 'Create your first chapter to start writing' : 'Select a chapter from the list'}
+          action={chapters.length === 0 ? 'New chapter' : null}
           onAction={() => setShowNew(true)}
         />
       )}
