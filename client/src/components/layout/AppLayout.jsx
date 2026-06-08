@@ -3,7 +3,7 @@ import { NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
 import {
   Feather, LayoutGrid, BookOpen, Users, Globe,
   ListTree, Settings, UserCircle, Menu,
-  Sun, Moon, ChevronLeft, ChevronRight, Sparkles
+  Sun, Moon, ChevronLeft, ChevronRight, Sparkles, FileOutput
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import useThemeStore from '../../store/themeStore'
@@ -16,6 +16,7 @@ const NAV = [
   { to: 'characters',icon: Users,      label: 'Characters' },
   { to: 'world',     icon: Globe,      label: 'World bible'},
   { to: 'plot',      icon: ListTree,   label: 'Plot outline'},
+  { to: 'export',    icon: FileOutput, label: 'Export'      },
 ]
 
 export default function AppLayout() {

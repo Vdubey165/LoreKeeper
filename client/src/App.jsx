@@ -6,17 +6,14 @@ import ProtectedRoute from './components/layout/ProtectedRoute'
 import Login      from './pages/Login'
 import Register   from './pages/Register'
 import Dashboard  from './pages/Dashboard'
+import Settings   from './pages/Settings'
+import Export     from './pages/Export'
 import Chapters   from './pages/Chapters'
 import Characters from './pages/Characters'
 import WorldBible from './pages/WorldBible'
 import PlotOutline from './pages/PlotOutline'
 
-const Settings = () => (
-  <div className="p-6">
-    <h1 className="text-base font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Settings</h1>
-    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Coming soon.</p>
-  </div>
-)
+
 
 export default function App() {
   const { token, fetchMe } = useAuthStore()
@@ -45,6 +42,7 @@ export default function App() {
             <Route path="characters" element={<Characters />} />
             <Route path="world"      element={<WorldBible />} />
             <Route path="plot"       element={<PlotOutline />} />
+            <Route path="export"     element={<Export />} />
           </Route>
         </Route>
 
