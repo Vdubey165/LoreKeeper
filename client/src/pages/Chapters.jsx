@@ -86,7 +86,7 @@ export default function Chapters() {
   const ChapterList = (
     <div
       className="flex flex-col overflow-hidden h-full"
-      style={{ background: 'var(--bg-primary)', borderRight: '0.5px solid var(--border)' }}
+      style={{ background: 'var(--bg-primary)', borderRight: '0.5px solid var(--border)', marginRight: '-0.5px' }}
     >
       <div className="flex items-center justify-between px-3 py-3" style={{ borderBottom: '0.5px solid var(--border)' }}>
         <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
@@ -193,8 +193,9 @@ export default function Chapters() {
       ) : (
         <EmptyState
           icon={BookOpen}
-          message={chapters.length === 0 ? 'Create your first chapter to start writing' : 'Select a chapter from the list'}
-          action={chapters.length === 0 ? 'New chapter' : null}
+          title={chapters.length === 0 ? 'No chapters yet' : 'Select a chapter'}
+          message={chapters.length === 0 ? 'Each chapter is a separate writing space. Auto-saves as you type. Add in any order — rearrange later.' : 'Pick a chapter from the list on the left to open it in the editor.'}
+          action={chapters.length === 0 ? 'Write first chapter' : null}
           onAction={() => setShowNew(true)}
         />
       )}

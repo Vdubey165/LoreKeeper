@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, BookOpen, Trash2, MoreHorizontal } from 'lucide-react'
 import useStoryStore from '../store/storyStore'
+import WelcomeBanner from '../components/ui/WelcomeBanner'
 
 const GENRES = ['fantasy', 'sci-fi', 'thriller', 'mystery', 'romance', 'horror', 'drama', 'historical', 'other']
 
@@ -13,12 +14,24 @@ const GENRE_BADGE = {
 
 export default function Dashboard() {
   const { stories, fetchStories, createStory, deleteStory, setActiveStory, loading } = useStoryStore()
+  const [showBanner, setShowBanner] = useState(() => !localStorage.getItem('lk_welcomed'))
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', genre: 'fantasy' })
   const [creating, setCreating] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => { fetchStories() }, [])
+
+  const handleDismiss = () => {
+    localStorage.setItem('lk_welcomed', '1')
+    setShowBanner(false)
+  }
+
+  const handleBannerCreate = () => {
+    localStorage.setItem('lk_welcomed', '1')
+    setShowBanner(false)
+    setShowModal(true)
+  }
 
   const handleCreate = async (e) => {
     e.preventDefault()
@@ -60,6 +73,10 @@ export default function Dashboard() {
           New story
         </button>
       </div>
+
+      {showBanner && (
+        <WelcomeBanner onDismiss={handleDismiss} onCreateStory={handleBannerCreate} />
+      )}
 
       {/* Stories grid */}
       {loading ? (
