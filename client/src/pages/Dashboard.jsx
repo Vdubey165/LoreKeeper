@@ -4,7 +4,7 @@ import { Plus, BookOpen, Trash2, MoreHorizontal } from 'lucide-react'
 import useStoryStore from '../store/storyStore'
 import { TEMPLATE_STORY, TEMPLATE_CHARACTERS, TEMPLATE_WORLD_ENTRIES, TEMPLATE_PLOT_NODES, TEMPLATE_CHAPTER } from '../lib/templateData'
 import api from '../lib/api'
-import WelcomeBanner from '../components/ui/WelcomeBanner'
+
 
 const GENRES = ['fantasy', 'sci-fi', 'thriller', 'mystery', 'romance', 'horror', 'drama', 'historical', 'other']
 
