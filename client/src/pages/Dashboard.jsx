@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
+import { Plus, BookOpen, Trash2 } from 'lucide-react'
 import useStoryStore from '../store/storyStore'
 import { TEMPLATE_STORY, TEMPLATE_CHARACTERS, TEMPLATE_WORLD_ENTRIES, TEMPLATE_PLOT_NODES, TEMPLATE_CHAPTER } from '../lib/templateData'
 import api from '../lib/api'
