@@ -8,8 +8,8 @@
 
 const BASE_URL = 'http://localhost:5000/api' // or your Render URL
 
-const EMAIL    = 'your@email.com'   // ← your account email
-const PASSWORD = 'yourpassword'     // ← your account password
+const EMAIL    = 'vaibhav1@gmail.com'   // ← your account email
+const PASSWORD = '123456'     // ← your account password
 
 // ─── Template data (copy of client/src/lib/templateData.js) ───────────────
 
