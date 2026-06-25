@@ -4,7 +4,7 @@ import WorldEntry from '../models/WorldEntry.js';
 import Chapter from '../models/Chapter.js';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.1-8b-instant';
+const GROQ_MODEL = 'gpt-oss-20b';
 
 const buildStoryContext = async (storyId) => {
   const [story, characters, worldEntries, chapters] = await Promise.all([
