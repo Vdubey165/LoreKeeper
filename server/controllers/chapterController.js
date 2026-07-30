@@ -56,6 +56,12 @@ export const createChapter = async (req, res, next) => {
     const order = lastChapter ? lastChapter.order + 1 : 0;
 
     const chapter = await Chapter.create({ storyId, order, ...req.body });
+
+    // Keep story word count in sync (createChapter previously skipped this,
+    // so any chapter created with initial content — e.g. via a seed script —
+    // never counted toward the story total)
+    await recalcStoryWordCount(storyId);
+
     res.status(201).json(chapter);
   } catch (error) {
     next(error);
