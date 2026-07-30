@@ -10,7 +10,7 @@ import useThemeStore from '../../store/themeStore'
 import useStoryStore from '../../store/storyStore'
 import AIPanel from '../ai/AIPanel'
 
-const NAV = [
+const STORY_NAV = [
   { to: '',          icon: LayoutGrid, label: 'Stories',      exact: true },
   { to: 'chapters',  icon: BookOpen,   label: 'Chapters'   },
   { to: 'characters',icon: Users,      label: 'Characters' },
@@ -18,12 +18,16 @@ const NAV = [
   { to: 'plot',      icon: ListTree,   label: 'Plot outline'},
   { to: 'export',    icon: FileOutput, label: 'Export'      },
 ]
+const DASHBOARD_NAV = [
+  { to: '', icon: LayoutGrid, label: 'Stories', exact: true },
+]
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileOpen, setMobileOpen]   = useState(false)
   const [aiOpen, setAiOpen]           = useState(false)
   const { storyId } = useParams()
+  const NAV = storyId ? STORY_NAV : DASHBOARD_NAV
   const { user, logout }   = useAuthStore()
   const { theme, toggle }  = useThemeStore()
   const { activeStory, fetchStory } = useStoryStore()
