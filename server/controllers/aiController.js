@@ -6,7 +6,13 @@ import Chapter from '../models/Chapter.js';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'gpt-oss-20b';
 
-const buildStoryContext = async (storyId) => {
+// Replacement for buildStoryContext in server/controllers/aiController.js
+// Drop this in place of the existing function.
+
+const truncate = (str, maxChars) =>
+  str.length > maxChars ? str.slice(0, maxChars).trim() + '…' : str;
+
+const buildStoryContext = async (storyId, latestUserMessage = '') => {
   const [story, characters, worldEntries, chapters] = await Promise.all([
     Story.findById(storyId),
     Character.find({ storyId }),
@@ -17,22 +23,43 @@ const buildStoryContext = async (storyId) => {
   let context = `STORY: "${story.title}" (${story.genre})\n`;
   if (story.description) context += `PREMISE: ${story.description}\n`;
 
+  const mentionsName = (name) =>
+    latestUserMessage.toLowerCase().includes(name.toLowerCase());
+
+  // --- Characters: full detail for protagonists/antagonists or anyone named
+  // in the current message; everyone else gets a one-line index entry so the
+  // assistant still knows they exist without burning tokens on their full bio.
   if (characters.length > 0) {
     context += `\nCHARACTERS:\n`;
     characters.forEach((c) => {
-      context += `- ${c.name} (${c.role})`;
-      if (c.aliases?.length) context += `, aka: ${c.aliases.join(', ')}`;
-      if (c.traits?.length) context += `. Traits: ${c.traits.join(', ')}`;
-      if (c.backstory) context += `. Backstory: ${c.backstory}`;
-      if (c.motivations) context += `. Motivations: ${c.motivations}`;
-      context += '\n';
+      const isKeyRole = c.role === 'protagonist' || c.role === 'antagonist';
+      const isMentioned = mentionsName(c.name) || c.aliases?.some(mentionsName);
+      const includeFull = isKeyRole || isMentioned;
+
+      if (includeFull) {
+        let entry = `- ${c.name} (${c.role})`;
+        if (c.aliases?.length) entry += `, aka: ${c.aliases.join(', ')}`;
+        if (c.traits?.length) entry += `. Traits: ${c.traits.join(', ')}`;
+        if (c.backstory) entry += `. Backstory: ${truncate(c.backstory, 500)}`;
+        if (c.motivations) entry += `. Motivations: ${truncate(c.motivations, 150)}`;
+        context += entry + '\n';
+      } else {
+        context += `- ${c.name} (${c.role})${c.aliases?.length ? `, aka: ${c.aliases[0]}` : ''}\n`;
+      }
     });
   }
 
+  // --- World entries: same pattern — full body if named in the message,
+  // otherwise just title + type so the assistant knows it exists.
   if (worldEntries.length > 0) {
     context += `\nWORLD BIBLE:\n`;
     worldEntries.forEach((e) => {
-      context += `[${e.type.toUpperCase()}] ${e.title}: ${e.body?.slice(0, 300) || 'No details'}\n`;
+      const isMentioned = mentionsName(e.title);
+      if (isMentioned) {
+        context += `[${e.type.toUpperCase()}] ${e.title}: ${truncate(e.body || '', 500)}\n`;
+      } else {
+        context += `[${e.type.toUpperCase()}] ${e.title}\n`;
+      }
     });
   }
 
@@ -40,8 +67,15 @@ const buildStoryContext = async (storyId) => {
     const sorted = chapters.sort((a, b) => a.order - b.order);
     context += `\nRECENT CHAPTERS:\n`;
     sorted.forEach((ch) => {
-      context += `Chapter: "${ch.title}"\n${ch.plainText?.slice(0, 600) || 'No content yet'}\n---\n`;
+      context += `Chapter: "${ch.title}"\n${truncate(ch.plainText || 'No content yet', 600)}\n---\n`;
     });
+  }
+
+  // Hard safety cap regardless of the above — protects against pathological
+  // cases (e.g. many characters all named in one message at once).
+  const HARD_CAP_CHARS = 12000; // ~ 8-9k tokens, well under most free-tier TPM limits
+  if (context.length > HARD_CAP_CHARS) {
+    context = context.slice(0, HARD_CAP_CHARS) + '\n[context truncated for length]';
   }
 
   return { context, storyTitle: story.title };
@@ -54,7 +88,8 @@ export const chat = async (req, res, next) => {
     const story = await Story.findOne({ _id: storyId, userId: req.user._id });
     if (!story) return res.status(404).json({ message: 'Story not found' });
 
-    const { context, storyTitle } = await buildStoryContext(storyId);
+    const latestUserMessage = messages[messages.length - 1]?.content || '';
+    const { context, storyTitle } = await buildStoryContext(storyId, latestUserMessage);
 
     const systemPrompt = `You are a creative writing assistant embedded inside Lorekeeper, a story writing platform.
 You have deep knowledge of the story called "${storyTitle}" — its characters, world, and plot.
