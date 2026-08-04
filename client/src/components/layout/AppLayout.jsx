@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
 import {
   Feather, LayoutGrid, BookOpen, Users, Globe,
@@ -27,6 +27,7 @@ export default function AppLayout() {
   const [mobileOpen, setMobileOpen]   = useState(false)
   const [aiOpen, setAiOpen]           = useState(false)
   const { storyId } = useParams()
+  const inStory = !!storyId
   const NAV = storyId ? STORY_NAV : DASHBOARD_NAV
   const { user, logout }   = useAuthStore()
   const { theme, toggle }  = useThemeStore()
@@ -41,6 +42,18 @@ export default function AppLayout() {
     window.addEventListener('resize', handler)
     return () => window.removeEventListener('resize', handler)
   }, [])
+
+  // Auto-collapse the sidebar on the dashboard (nothing story-scoped to show),
+  // auto-expand on entering a story. Only fires on dashboard<->story transitions,
+  // not when switching between two different stories, so manual toggles inside
+  // a story session are preserved.
+  const prevInStory = useRef(inStory)
+  useEffect(() => {
+    if (prevInStory.current !== inStory) {
+      setSidebarOpen(inStory)
+      prevInStory.current = inStory
+    }
+  }, [inStory])
 
   // fetch story when navigating directly to a story route, or when switching stories
   useEffect(() => {
