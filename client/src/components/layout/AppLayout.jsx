@@ -23,10 +23,10 @@ const DASHBOARD_NAV = [
 ]
 
 export default function AppLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const { storyId } = useParams()
+  const [sidebarOpen, setSidebarOpen] = useState(() => !!storyId)
   const [mobileOpen, setMobileOpen]   = useState(false)
   const [aiOpen, setAiOpen]           = useState(false)
-  const { storyId } = useParams()
   const inStory = !!storyId
   const NAV = storyId ? STORY_NAV : DASHBOARD_NAV
   const { user, logout }   = useAuthStore()
