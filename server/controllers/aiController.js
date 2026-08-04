@@ -4,7 +4,7 @@ import WorldEntry from '../models/WorldEntry.js';
 import Chapter from '../models/Chapter.js';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'gpt-oss-20b';
+const GROQ_MODEL = 'openai/gpt-oss-20b';
 
 // Replacement for buildStoryContext in server/controllers/aiController.js
 // Drop this in place of the existing function.
