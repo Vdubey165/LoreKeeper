@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, BookOpen, Trash2 } from 'lucide-react'
+import { Plus, BookOpen, Trash2, Pencil, Check, X } from 'lucide-react'
 import useStoryStore from '../store/storyStore'
 import { TEMPLATE_STORY, TEMPLATE_CHARACTERS, TEMPLATE_WORLD_ENTRIES, TEMPLATE_PLOT_NODES, TEMPLATE_CHAPTER } from '../lib/templateData'
 import api from '../lib/api'
@@ -15,12 +15,14 @@ const GENRE_BADGE = {
 }
 
 export default function Dashboard() {
-  const { stories, fetchStories, createStory, deleteStory, setActiveStory, loading } = useStoryStore()
+  const { stories, fetchStories, createStory, deleteStory, updateStory, setActiveStory, loading } = useStoryStore()
   
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', genre: 'fantasy' })
   const [creating, setCreating] = useState(false)
   const [creatingTemplate, setCreatingTemplate] = useState(false)
+  const [renamingId, setRenamingId] = useState(null)
+  const [renameDraft, setRenameDraft] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => { fetchStories() }, [])
@@ -68,6 +70,24 @@ export default function Dashboard() {
     if (confirm('Delete this story? This cannot be undone.')) {
       await deleteStory(id)
     }
+  }
+
+  const startRename = (e, story) => {
+    e.stopPropagation()
+    setRenamingId(story._id)
+    setRenameDraft(story.title)
+  }
+
+  const commitRename = async (e, id) => {
+    e.stopPropagation()
+    const trimmed = renameDraft.trim()
+    if (trimmed) await updateStory(id, { title: trimmed })
+    setRenamingId(null)
+  }
+
+  const cancelRename = (e) => {
+    e.stopPropagation()
+    setRenamingId(null)
   }
 
   return (
@@ -122,18 +142,51 @@ export default function Dashboard() {
             >
               <div className="flex items-start justify-between mb-2">
                 <span className={`badge ${GENRE_BADGE[story.genre] || ''}`}>{story.genre}</span>
-                <button
-                  onClick={(e) => handleDelete(e, story._id)}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded transition-opacity"
-                  style={{ color: 'var(--text-faint)' }}
-                >
-                  <Trash2 size={13} />
-                </button>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {renamingId !== story._id && (
+                    <button
+                      onClick={(e) => startRename(e, story)}
+                      className="p-1 rounded"
+                      style={{ color: 'var(--text-faint)' }}
+                    >
+                      <Pencil size={13} />
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => handleDelete(e, story._id)}
+                    className="p-1 rounded"
+                    style={{ color: 'var(--text-faint)' }}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
 
-              <h2 className="text-sm font-medium mt-2 mb-1 leading-snug" style={{ color: 'var(--text-primary)' }}>
-                {story.title}
-              </h2>
+              {renamingId === story._id ? (
+                <div className="flex items-center gap-1 mt-2 mb-1" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    autoFocus
+                    className="text-sm font-medium bg-transparent outline-none flex-1 min-w-0"
+                    style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--ink)' }}
+                    value={renameDraft}
+                    onChange={(e) => setRenameDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitRename(e, story._id)
+                      if (e.key === 'Escape') cancelRename(e)
+                    }}
+                  />
+                  <button onClick={(e) => commitRename(e, story._id)} className="p-0.5 flex-shrink-0" style={{ color: 'var(--ink)' }}>
+                    <Check size={14} />
+                  </button>
+                  <button onClick={cancelRename} className="p-0.5 flex-shrink-0" style={{ color: 'var(--text-faint)' }}>
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <h2 className="text-sm font-medium mt-2 mb-1 leading-snug" style={{ color: 'var(--text-primary)' }}>
+                  {story.title}
+                </h2>
+              )}
 
               {story.description && (
                 <p className="text-xs line-clamp-2 mb-3" style={{ color: 'var(--text-muted)' }}>

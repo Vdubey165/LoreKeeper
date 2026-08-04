@@ -3,7 +3,7 @@ import { NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
 import {
   Feather, LayoutGrid, BookOpen, Users, Globe,
   ListTree, Settings, UserCircle, Menu,
-  Sun, Moon, ChevronLeft, ChevronRight, Sparkles, FileOutput
+  Sun, Moon, ChevronLeft, ChevronRight, Sparkles, FileOutput, Pencil
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import useThemeStore from '../../store/themeStore'
@@ -30,8 +30,11 @@ export default function AppLayout() {
   const NAV = storyId ? STORY_NAV : DASHBOARD_NAV
   const { user, logout }   = useAuthStore()
   const { theme, toggle }  = useThemeStore()
-  const { activeStory, fetchStory } = useStoryStore()
+  const { activeStory, fetchStory, updateStory } = useStoryStore()
   const navigate = useNavigate()
+
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleDraft, setTitleDraft] = useState('')
 
   useEffect(() => {
     const handler = () => { if (window.innerWidth >= 768) setMobileOpen(false) }
@@ -39,12 +42,26 @@ export default function AppLayout() {
     return () => window.removeEventListener('resize', handler)
   }, [])
 
-  // fetch story when navigating directly to a story route
+  // fetch story when navigating directly to a story route, or when switching stories
   useEffect(() => {
-    if (storyId && !activeStory) fetchStory(storyId)
+    if (storyId && activeStory?._id !== storyId) fetchStory(storyId)
+    setEditingTitle(false)
   }, [storyId])
 
   const handleLogout = () => { logout(); navigate('/login') }
+
+  const startEditTitle = () => {
+    setTitleDraft(activeStory.title)
+    setEditingTitle(true)
+  }
+
+  const commitTitle = async () => {
+    setEditingTitle(false)
+    const trimmed = titleDraft.trim()
+    if (trimmed && trimmed !== activeStory.title) {
+      await updateStory(activeStory._id, { title: trimmed })
+    }
+  }
 
   const SidebarContent = ({ mobile = false }) => (
     <div
@@ -80,9 +97,31 @@ export default function AppLayout() {
       {storyId && (sidebarOpen || mobile) && activeStory && (
         <div className="px-3 py-2" style={{ borderBottom: '0.5px solid var(--border)' }}>
           <p className="text-xs" style={{ color: 'var(--text-faint)' }}>Current story</p>
-          <p className="text-xs font-medium truncate mt-0.5" style={{ color: 'var(--text-primary)' }}>
-            {activeStory.title}
-          </p>
+          {editingTitle ? (
+            <input
+              autoFocus
+              className="text-xs font-medium mt-0.5 bg-transparent outline-none w-full"
+              style={{ color: 'var(--text-primary)', borderBottom: '1px solid var(--ink)' }}
+              value={titleDraft}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.target.blur()
+                if (e.key === 'Escape') setEditingTitle(false)
+              }}
+            />
+          ) : (
+            <button
+              onClick={startEditTitle}
+              className="group/title flex items-center gap-1 mt-0.5 w-full text-left"
+              title="Rename story"
+            >
+              <span className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>
+                {activeStory.title}
+              </span>
+              <Pencil size={10} className="opacity-0 group-hover/title:opacity-100 flex-shrink-0" style={{ color: 'var(--text-faint)' }} />
+            </button>
+          )}
         </div>
       )}
 

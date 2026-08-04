@@ -30,8 +30,10 @@ export default function Chapters() {
   const [mobileView, setMobileView] = useState('list')
 
   useEffect(() => {
+    setActiveChapter(null)
+    setMobileView('list')
     fetchChapters(storyId)
-    if (!activeStory) fetchStory(storyId)
+    fetchStory(storyId)
   }, [storyId])
 
   const handleSelectChapter = async (ch) => {
