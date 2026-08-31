@@ -12,7 +12,7 @@ const FEATURES = [
 ]
 
 const openingLines = TEMPLATE_CHAPTER.content.content
-  .slice(0, 4)
+  .slice(0, 2)
   .map((node) => (node.content || []).map((c) => c.text).join(''))
 
 export default function Landing() {
@@ -36,7 +36,7 @@ export default function Landing() {
 
       <main className="max-w-[1320px] mx-auto px-6 md:px-10">
         {/* Hero */}
-        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-14 items-center pt-10 pb-20">
+        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-14 items-start pt-16 pb-20">
           <div>
             <h1
               className="text-4xl md:text-[2.75rem] font-medium mb-5 leading-[1.15]"
