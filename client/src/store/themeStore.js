@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-const saved = localStorage.getItem('theme') || 'warm'
+const saved = localStorage.getItem('theme') || 'dark'
 if (saved === 'dark') document.documentElement.classList.add('dark')
 
 const useThemeStore = create((set) => ({

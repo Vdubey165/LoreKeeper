@@ -1,40 +1,39 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useThemeStore from '../store/themeStore';
 
 
-
-
-// Wire these to your real routes / demo-login logic.
-const ROUTES = { signIn: '/login', register: '/register', demo: '/login' };
+const ROUTES = { signIn: '/login', register: '/register', demo: '/demo' };
 const IMG = '/img/';
-const THEME_KEY = 'lk-landing-theme';
 
 const FONT_HREF =
   'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Instrument+Sans:wght@400;500;600&display=swap';
 
 const THEME = `
-.lk-root[data-theme="light"]{
-  --bg:#f7f2ea; --surface:#fffdf9; --surface2:#f1eadf; --line:#e2d8c8;
-  --text:#2a221b; --text2:#3d342b; --muted:#6b6054; --faint:#8a7f72;
-  --accent:#a8693a; --accent-hover:#935a2f; --accent-text:#955a2c; --on-accent:#fffaf3;
-  --accent-soft:rgba(168,105,58,.10); --accent-line:rgba(168,105,58,.35);
-  --sage:#3f7a6a; --sage-soft:rgba(63,122,106,.10); --sage-line:rgba(63,122,106,.35); --sage-text:#2f6456;
-  --red:#b5443a; --red-soft:rgba(181,68,58,.09); --red-line:rgba(181,68,58,.35); --red-text:#a23a30;
-  --neutral-line:#a89c8d;
-  --glass:rgba(255,253,249,.93); --nav:rgba(247,242,234,.85);
-  --graph-a:#fffdf9; --graph-b:#f1eadf;
-  --shadow:0 24px 60px -24px rgba(80,55,30,.35); --shadow-sm:0 10px 24px -10px rgba(80,55,30,.30);
+/* Colours come straight from the workspace tokens (client/src/index.css):
+   warm = :root, dark = .dark. Accent = --ink / --ink-hover. */
+.lk-root[data-theme="warm"]{
+  --bg:#f5f0e8; --surface:#faf7f2; --surface2:#ede8e0; --line:#e0dbd4;
+  --text:#2c2825; --text2:#4a4540; --muted:#6b6560; --faint:#9b9590;
+  --accent:#8b7355; --accent-hover:#6b5840; --accent-text:#6b5840; --on-accent:#faf7f2;
+  --accent-soft:rgba(139,115,85,.12); --accent-line:rgba(139,115,85,.38);
+  --sage:#4f7a6c; --sage-soft:rgba(79,122,108,.11); --sage-line:rgba(79,122,108,.38); --sage-text:#3b6558;
+  --red:#a5493c; --red-soft:rgba(165,73,60,.09); --red-line:rgba(165,73,60,.35); --red-text:#8f3a2e;
+  --neutral-line:#b0a99f;
+  --glass:rgba(250,247,242,.93); --nav:rgba(245,240,232,.85);
+  --graph-a:#faf7f2; --graph-b:#ede8e0;
+  --shadow:0 24px 60px -24px rgba(70,50,30,.32); --shadow-sm:0 10px 24px -10px rgba(70,50,30,.28);
 }
 .lk-root[data-theme="dark"]{
-  --bg:#1a1714; --surface:#211d19; --surface2:#2b251f; --line:#3a332b;
-  --text:#f0e8dd; --text2:#d9cfc3; --muted:#b8aea3; --faint:#8f857a;
-  --accent:#c08a5d; --accent-hover:#d09a6c; --accent-text:#e0b48a; --on-accent:#1a1714;
-  --accent-soft:rgba(192,138,93,.12); --accent-line:rgba(192,138,93,.35);
-  --sage:#6f9a8d; --sage-soft:rgba(111,154,141,.12); --sage-line:rgba(111,154,141,.4); --sage-text:#9fc4b8;
-  --red:#b5543f; --red-soft:rgba(181,84,63,.12); --red-line:rgba(181,84,63,.4); --red-text:#e08a76;
-  --neutral-line:#6b6258;
-  --glass:rgba(26,23,20,.9); --nav:rgba(26,23,20,.85);
-  --graph-a:#2a231c; --graph-b:#1e1a16;
+  --bg:#1a1814; --surface:#221f1a; --surface2:#2e2a25; --line:#3a3530;
+  --text:#d4cfc8; --text2:#bdb8b0; --muted:#9b9590; --faint:#6b6560;
+  --accent:#a08060; --accent-hover:#c09070; --accent-text:#c09070; --on-accent:#1a1814;
+  --accent-soft:rgba(160,128,96,.14); --accent-line:rgba(160,128,96,.40);
+  --sage:#7fa597; --sage-soft:rgba(127,165,151,.12); --sage-line:rgba(127,165,151,.40); --sage-text:#9fc4b8;
+  --red:#b5543f; --red-soft:rgba(181,84,63,.12); --red-line:rgba(181,84,63,.40); --red-text:#e08a76;
+  --neutral-line:#6b6560;
+  --glass:rgba(34,31,26,.92); --nav:rgba(26,24,20,.85);
+  --graph-a:#262320; --graph-b:#1d1a16;
   --shadow:0 30px 80px -20px rgba(0,0,0,.8); --shadow-sm:0 14px 30px -8px rgba(0,0,0,.8);
 }
 `;
@@ -154,24 +153,9 @@ export default function Landing({ onOpenDemo }) {
   const navigate = useNavigate();
   const openDemo = onOpenDemo || (() => navigate(ROUTES.demo));
 
-  // Light by default. If your workspace already stores a theme, read it here instead.
-  const [theme, setTheme] = useState(() => {
-    try {
-      return localStorage.getItem(THEME_KEY) || 'light';
-    } catch {
-      return 'light';
-    }
-  });
-  const toggleTheme = () =>
-    setTheme((t) => {
-      const next = t === 'light' ? 'dark' : 'light';
-      try {
-        localStorage.setItem(THEME_KEY, next);
-      } catch {
-        /* storage unavailable */
-      }
-      return next;
-    });
+  // Shared with the workspace: same store, same localStorage key ('theme'), dark by default.
+  const theme = useThemeStore((st) => st.theme);
+  const toggleTheme = useThemeStore((st) => st.toggle);
 
   useEffect(() => {
     if (!document.querySelector('link[data-lk-fonts]')) {
@@ -201,10 +185,10 @@ export default function Landing({ onOpenDemo }) {
             <button onClick={openDemo} className="lk-muted hidden text-sm transition hover:opacity-80 sm:block">Live demo</button>
             <button
               onClick={toggleTheme}
-              aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+              aria-label={theme === 'dark' ? 'Switch to warm mode' : 'Switch to dark mode'}
               className="lk-btn-ghost flex h-9 w-9 items-center justify-center rounded-lg"
             >
-              {theme === 'light' ? <Moon /> : <Sun />}
+              {theme === 'dark' ? <Sun /> : <Moon />}
             </button>
             <button onClick={() => navigate(ROUTES.signIn)} className="lk-text px-3 py-2 text-sm">Sign in</button>
             <button onClick={() => navigate(ROUTES.register)} className="lk-btn-primary rounded-lg px-4 py-2 text-sm font-semibold transition">
@@ -453,7 +437,7 @@ export default function Landing({ onOpenDemo }) {
               <button
                 onClick={() => navigate(ROUTES.register)}
                 className={`${btn} mt-7`}
-                style={{ background: '#c08a5d', color: '#1a1714' }}
+                style={{ background: '#a08060', color: '#1a1814' }}
               >
                 Start writing, free
               </button>
